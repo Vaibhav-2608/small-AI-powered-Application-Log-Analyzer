@@ -1,87 +1,268 @@
-# small-AI-powered-Application-Log-Analyzer
-**Practical AI Assignment 1 — Technology Operations Intern**
+# AI-Powered Incident Analyzer
+## Technology Operations Intern — Practical AI Assignment 1
 
-## Overview
-A local web prototype for analyzing sample application logs. It summarizes error-level entries, detects repeated failure patterns, assigns a transparent preliminary severity, suggests troubleshooting steps, and creates a Markdown incident report.
+## 1. Project Objective
 
-## Features
-- Upload `.log` or `.txt` files, or paste logs into the interface.
-- Counts log levels and extracts `ERROR`, `CRITICAL`, and `FATAL` lines.
-- Detects common patterns: API timeouts, database connection issues, authentication failures, resource pressure, network/dependency failures, and application exceptions.
-- Assigns Critical / High / Medium / Low severity with an explanation.
-- Provides practical next steps and escalation guidance.
-- Downloads a shareable incident report.
-- Runs locally without an external API key.
+The objective of this project is to help Technology Operations engineers investigate application incidents by analyzing logs, identifying repeated failures, assessing severity, and recommending practical troubleshooting actions.
 
-## Technology and approach
-- Python: application logic and pattern matching.
-- Streamlit: browser-based interface.
-- Regular expressions and keyword rules: transparent baseline log analysis.
+This document describes my proposed developer-side incident diagnosis and troubleshooting methodology.
 
-**AI integration note:** This initial implementation uses rule-based analysis rather than a generative AI model. This is intentional for a reliable, reproducible demo. An LLM API can be added as an optional second stage to interpret the extracted evidence, while keeping rule-based evidence and severity visible. Do not claim an external AI model was used unless you implement and test that integration.
+**Project status:** Documentation and diagnostic approach are prepared. The full application implementation and end-to-end validation remain pending.
 
-## Setup
-Requires Python 3.10 or newer.
+## 2. Incident Diagnosis Workflow
 
-```bash
-# 1. Create and activate a virtual environment
-python -m venv .venv
+When an application issue is reported, I would follow these steps.
 
-# Windows PowerShell
-.venv\Scripts\Activate.ps1
+### Step 1: Understand the Incident
 
-# macOS/Linux
-source .venv/bin/activate
+- Identify the affected application, service, endpoint, and environment.
+- Determine when the issue started and whether it is ongoing.
+- Check whether users or business transactions are affected.
+- Review available monitoring alerts and service health indicators.
+- Check recent deployments, configuration changes, and infrastructure events.
+- Establish an initial incident timeline.
 
-# 2. Install dependencies
-pip install -r requirements.txt
+### Step 2: Collect and Validate Logs
 
-# 3. Start the app
-streamlit run app.py
-```
+- Collect relevant application logs covering the incident time window.
+- Verify timestamps, severity levels, service names, and request IDs.
+- Check whether the logs are empty, incomplete, malformed, or inconsistent.
+- Correlate entries across related services.
+- Remove secrets and sensitive information before analysis.
+- Preserve the original log entries for verification.
 
-Open the local URL printed in the terminal (usually `http://localhost:8501`).
+### Step 3: Identify Errors and Repeated Patterns
 
-## Demo
-1. Open `sample_logs/payment_timeout.log`.
-2. Copy and paste the content, or upload the file.
-3. Click **Analyze incident**.
-4. Review severity, matching evidence, hypotheses, next steps, and escalation guidance.
-5. Download the incident report.
+- Identify ERROR, CRITICAL, FATAL, and WARNING entries where supported by the log format.
+- Group similar error messages to identify recurring failures.
+- Look for API timeouts, database connection failures, authentication errors, and resource exhaustion.
+- Correlate errors using timestamps, request IDs, and service names.
+- Distinguish symptoms from confirmed root causes.
 
-## Example expected interpretation
-The sample log contains repeated payment API timeouts and database connection failures. The prototype should identify these patterns, assign a preliminary severity, and recommend checking API latency, database availability, and connection-pool saturation. These are hypotheses to verify, not confirmed root causes.
+### Step 4: Assess Incident Severity
 
-## Testing checklist
-- [ ] Empty input shows a helpful warning.
-- [ ] Error logs appear in the evidence section.
-- [ ] Repeated timeout/database messages are counted as patterns.
-- [ ] Severity includes a reason.
-- [ ] Report downloads as Markdown.
-- [ ] Test with logs that contain no errors and with malformed/unstructured lines.
+Evaluate the incident using:
 
-## Assumptions and limitations
-- Input is sample or simulated text logs; no production system is accessed.
-- Log formats vary, so unstructured lines may be classified as `UNKNOWN`.
-- Keyword matches can produce false positives or miss unfamiliar failure modes.
-- Severity is a preliminary heuristic; real severity also depends on customer impact, scope, duration, and service objectives.
-- The prototype does not connect to monitoring, ticketing, or deployment systems.
-- Root cause must be verified by a human using metrics, traces, recent changes, and service-owner knowledge.
-- Do not paste secrets, credentials, personal data, or production logs into the demo.
+- Business and user impact.
+- Number of affected services or transactions.
+- Duration and frequency of failures.
+- Criticality of the affected functionality.
+- Available monitoring and operational evidence.
 
-## Suggested presentation outline (10 minutes)
-1. Problem and objective (1 min)
-2. Architecture and workflow (1 min)
-3. Live demo with sample payment logs (3 min)
-4. Explain pattern detection and severity rationale (2 min)
-5. Testing, limitations, and safe use of AI (2 min)
-6. Summary and next improvements (1 min)
+Assign a preliminary severity of Critical, High, Medium, or Low, and document the reason.
 
-## Q&A topics to prepare
-- Why use rules instead of only an LLM? Rules make evidence and baseline severity reproducible; an LLM can be added for summarization but should not invent evidence.
-- How do you avoid presenting guesses as facts? Show matched log lines and label root-cause statements as hypotheses.
-- How would you improve it? Add structured parsers, optional LLM summarization, unit tests, JSON output, monitoring integrations, and role-based access.
-- Is it production-ready? No. It is a local prototype for simulated data, as requested by the assignment.
+Error counts alone are not sufficient to determine severity.
 
-## Individual contribution
-Replace this section with an accurate description of what you personally implemented, tested, and learned. If you used AI assistance, disclose it honestly and be ready to explain every major function.
+### Step 5: Identify Possible Root Causes
+
+- Review the detected error patterns.
+- Form hypotheses based on the available evidence.
+- Identify alternative explanations.
+- Determine which metrics, logs, traces, or system checks can validate each hypothesis.
+- Clearly distinguish observed facts from assumptions.
+- Avoid treating AI-generated explanations as confirmed root causes.
+
+### Step 6: Recommend Troubleshooting Actions
+
+- Begin with safe, non-destructive diagnostic checks.
+- Investigate the most likely causes using supporting evidence.
+- Make changes only when authorized and after considering the risks.
+- Define how recovery will be verified.
+- Escalate when the issue persists, the impact is significant, or specialist access is required.
+
+### Step 7: Generate an Incident Summary
+
+The final report should contain:
+
+- Incident description.
+- Affected service and time window.
+- Severity and rationale.
+- Key errors and repeated patterns.
+- Supporting log evidence.
+- Possible causes and their confidence or uncertainty.
+- Recommended troubleshooting actions.
+- Escalation guidance.
+- Known limitations and outstanding checks.
+
+## 3. Severity Classification
+
+| Severity | Description | Recommended response |
+|---|---|---|
+| Critical | Major outage, widespread severe impact, or critical functionality unavailable | Follow the incident escalation process immediately |
+| High | Significant degradation or repeated failures affecting an important service | Investigate promptly and involve the service owner when needed |
+| Medium | Partial or intermittent failure with limited impact | Investigate, monitor, and track the incident |
+| Low | Minor issue with no clear user impact | Document and monitor for recurrence |
+
+These are preliminary guidelines. The organization's incident policy and service-level objectives take precedence.
+
+## 4. Example Incident: Payment API Timeout
+
+### Observed symptoms
+
+Suppose application logs contain:
+
+- Repeated payment API timeouts.
+- Database connection failures.
+- Connection-pool exhaustion.
+- Increased request latency.
+
+### Initial diagnosis
+
+**Observed evidence:** Payment requests are timing out, and database connectivity errors are present.
+
+**Possible root cause:** Database unavailability or connection-pool exhaustion may be contributing to payment API timeouts.
+
+**Potential impact:** Payment requests may be delayed or fail. The actual customer impact must be confirmed.
+
+**Preliminary severity:** High if payment functionality is significantly affected.
+
+This diagnosis is a hypothesis, not a confirmed root cause.
+
+### Troubleshooting procedure
+
+1. Confirm whether payment requests are currently failing.
+2. Check payment-service health, latency, and error rates.
+3. Check database availability and database-side logs.
+4. Inspect connection-pool utilization, active connections, and configured connection limits.
+5. Review CPU, memory, disk, and network metrics.
+6. Correlate payment and database logs using timestamps and request IDs.
+7. Review recent deployments and configuration changes.
+8. Check whether retries are increasing the load on the service.
+9. Identify the underlying cause before proposing remediation.
+10. Verify recovery using health checks, error rates, latency, and safe test transactions.
+
+If the problem continues or requires specialist access, escalate to the relevant service owner or on-call engineer.
+
+**Important:** Do not immediately restart services or increase database connection limits without understanding the cause and following the approved change process.
+
+## 5. Troubleshooting Decision Guide
+
+### Problem A: Logs cannot be loaded
+
+- Verify that the file exists and is readable.
+- Check file format, encoding, permissions, and size.
+- Confirm that the input is not empty.
+- Test with a known-good sample log.
+- Provide a clear validation message when input is invalid.
+
+### Problem B: Errors are not detected
+
+- Inspect the original log format.
+- Verify how severity levels are represented.
+- Check capitalization, timestamps, and structured JSON fields.
+- Review parser assumptions.
+- Preserve unmatched entries for manual inspection.
+
+### Problem C: Repeated errors are incorrectly grouped
+
+- Compare the original error messages.
+- Identify variable fields such as timestamps and request IDs.
+- Normalize messages carefully before grouping.
+- Verify that distinct failure types are not combined.
+- Test both matching and non-matching examples.
+
+### Problem D: Severity classification appears incorrect
+
+- Reassess the affected functionality and business impact.
+- Check the incident duration and scope.
+- Review the evidence supporting the severity.
+- Determine whether the classification relied too heavily on error counts.
+- Escalate immediately if evidence suggests a major outage.
+
+### Problem E: Root cause remains uncertain
+
+- Record the observed symptoms.
+- List plausible causes and supporting evidence.
+- Identify the next diagnostic check that can distinguish between them.
+- Review monitoring metrics, service dependencies, traces, and deployment history.
+- Keep the incident marked as under investigation until sufficient evidence is available.
+
+### Problem F: AI output is incorrect or unsupported
+
+- Compare generated claims with the original logs.
+- Identify unsupported statements and contradictory evidence.
+- Validate the response structure.
+- Avoid presenting hypotheses as facts.
+- Check API availability, authentication, rate limits, and timeout handling if an AI service is integrated.
+- Use a deterministic fallback only if it has been implemented and tested.
+
+### Problem G: The incident report is incomplete
+
+- Verify that severity and rationale are present.
+- Confirm that key log evidence is included.
+- Check whether recommended actions relate to the detected errors.
+- Mark missing information explicitly.
+- Confirm that the report matches the analysis presented to the user.
+
+## 6. AI-Assisted Analysis Approach
+
+For the completed AI-enabled application, I would separate analysis into two stages.
+
+**Stage 1: Evidence extraction**
+
+Extract relevant log entries, timestamps, severity levels, and repeated patterns using deterministic processing.
+
+**Stage 2: AI-assisted interpretation**
+
+Use an AI model to summarize the evidence, suggest possible causes, explain potential impact, and recommend diagnostic checks.
+
+The output should include supporting evidence and clearly identify uncertainty. The AI model should assist the engineer, not make unverified operational changes.
+
+AI integration remains pending until an actual model has been connected and tested.
+
+## 7. Testing and Validation Plan
+
+| Test scenario | Expected result |
+|---|---|
+| Healthy application logs | No unsupported error findings |
+| Repeated API timeouts | Timeout pattern identified |
+| Database connection failures | Database-related evidence highlighted |
+| Critical or fatal errors | High-priority findings surfaced with rationale |
+| Empty input | Clear validation message |
+| Malformed log entries | Safe handling and disclosed limitations |
+| Multiple error types | Separate patterns and relevant evidence |
+| Unsupported AI claims | Claims flagged or excluded |
+| Report generation | Report accurately reflects the analysis |
+
+This is a proposed test plan. Test results should only be reported after the corresponding tests have actually been executed.
+
+## 8. Incident Report Template
+
+- **Incident title:**
+- **Affected service:**
+- **Environment:**
+- **Incident time window:**
+- **Severity and rationale:**
+- **Potential business impact:**
+- **Observed log evidence:**
+- **Repeated error patterns:**
+- **Possible root causes:**
+- **Checks completed:**
+- **Checks still required:**
+- **Recommended actions:**
+- **Escalation status:**
+- **Recovery validation:**
+- **Outstanding risks or unknowns:**
+
+## 9. Limitations
+
+- Log formats differ across applications.
+- Logs alone may not establish the actual business impact or root cause.
+- Pattern matching can produce false positives or miss unfamiliar failures.
+- AI-generated explanations can be incorrect or incomplete.
+- The analysis must be validated against monitoring data and operational context.
+- This document describes the diagnostic approach; it does not demonstrate that the full application has been implemented.
+
+## 10. Interview Demonstration Approach
+
+During the interview, I would:
+
+1. Explain the incident scenario and affected functionality.
+2. Show the relevant log evidence.
+3. Explain how repeated failures are identified.
+4. Describe how severity is assessed.
+5. Present a possible root cause and explain how to verify it.
+6. Walk through the troubleshooting and escalation process.
+7. Explain how testing and evidence validation reduce incorrect conclusions.
+
+I will clearly distinguish documented plans, completed implementation, executed tests, and remaining work.
